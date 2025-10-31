@@ -1,0 +1,251 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@layer base {
+  :root {
+    --background: 225 68% 97%;
+    --foreground: 225 17% 27%;
+    --card: 226 23% 99%;
+    --card-foreground: 225 21% 26%;
+    --popover: 226 24% 99%;
+    --popover-foreground: 222 16% 33%;
+    --primary: 227 85% 63%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 80% 78%;
+    --secondary-foreground: 220 18% 33%;
+    --muted: 222 30% 91%;
+    --muted-foreground: 225 18% 53%;
+    --accent: 220 72% 83%;
+    --accent-foreground: 226 22% 28%;
+    --destructive: 0 85% 68%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 225 22% 79%;
+    --input: 225 22% 79%;
+    --ring: 227 85% 68%;
+    --radius: 0.75rem;
+  }
+
+  .theme-rosa {
+    --background: 340 80% 98%;
+    --foreground: 340 27% 27%;
+    --card: 0 0% 100%;
+    --card-foreground: 340 27% 27%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 27% 27%;
+    --primary: 335 96% 70%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 337 80% 85%;
+    --secondary-foreground: 340 27% 27%;
+    --muted: 335 30% 95%;
+    --muted-foreground: 335 27% 45%;
+    --accent: 317 84% 90%;
+    --accent-foreground: 340 27% 27%;
+    --destructive: 350 96% 63%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 335 24% 80%;
+    --input: 335 24% 80%;
+    --ring: 335 96% 70%;
+    --radius: 0.75rem;
+  }
+
+  .theme-verde {
+    --background: 139 67% 96%;
+    --foreground: 140 23% 19%;
+    --card: 0 0% 100%;
+    --card-foreground: 140 23% 19%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 140 23% 19%;
+    --primary: 152 61% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 142 52% 80%;
+    --secondary-foreground: 140 23% 19%;
+    --muted: 138 36% 92%;
+    --muted-foreground: 140 16% 42%;
+    --accent: 150 62% 84%;
+    --accent-foreground: 140 23% 19%;
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 142 30% 74%;
+    --input: 142 30% 74%;
+    --ring: 152 61% 55%;
+    --radius: 0.75rem;
+  }
+
+  .theme-sol {
+    --background: 48 100% 97%;
+    --foreground: 29 45% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 29 45% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 29 45% 18%;
+    --primary: 43 97% 65%;
+    --primary-foreground: 29 35% 13%;
+    --secondary: 35 97% 84%;
+    --secondary-foreground: 29 45% 18%;
+    --muted: 45 42% 93%;
+    --muted-foreground: 29 22% 45%;
+    --accent: 25 100% 85%;
+    --accent-foreground: 29 45% 18%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 44 28% 84%;
+    --input: 44 28% 84%;
+    --ring: 43 97% 65%;
+    --radius: 0.75rem;
+  }
+
+  .theme-dark {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 13%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 8%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 24%;
+    --muted-foreground: 0 0% 98%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 0 0% 12%;
+    --destructive: 0 100% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 28%;
+    --input: 0 0% 19%;
+    --ring: 0 0% 100%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  .calendar-wrapper {
+    @apply rounded-2xl shadow-lg border border-border bg-card/80 backdrop-blur-md transition-all duration-200;
+  }
+
+  .calendar-wrapper .fc-toolbar-title,
+  .calendar-wrapper h2,
+  .calendar-wrapper .fc-col-header-cell,
+  .calendar-wrapper th {
+    color: hsl(var(--foreground)) !important;
+    font-weight: 700 !important;
+  }
+
+  .calendar-wrapper .fc-toolbar-title {
+    font-size: 1.15rem !important;
+  }
+
+  .calendar-wrapper .fc-button {
+    background: hsl(var(--muted)) !important;
+    color: hsl(var(--foreground)) !important;
+    border: none !important;
+    border-radius: 0.75rem !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    min-width: 46px !important;
+    min-height: 36px !important;
+    padding: 0.45rem 1rem !important;
+    box-shadow: 0 1px 8px hsl(var(--primary) / 0.1) !important;
+    transition: all 0.25s ease !important;
+  }
+
+  .calendar-wrapper .fc-button:hover,
+  .calendar-wrapper .fc-button-active {
+    background: hsl(var(--accent)) !important;
+    color: hsl(var(--accent-foreground)) !important;
+  }
+
+  .calendar-wrapper .fc-col-header-cell,
+  .calendar-wrapper .fc-timegrid-slot-label {
+    background: hsl(var(--background)) !important;
+    color: hsl(var(--foreground)) !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    border: none !important;
+  }
+
+  .calendar-wrapper .fc-daygrid-day,
+  .calendar-wrapper .fc-timegrid-slot {
+    background: hsl(var(--card)) !important;
+    color: hsl(var(--foreground)) !important;
+    transition: all 0.2s ease;
+  }
+
+  .calendar-wrapper .fc-daygrid-day:hover,
+  .calendar-wrapper .fc-timegrid-slot:hover {
+    background: hsl(var(--muted)) !important;
+  }
+
+  .calendar-wrapper .fc-day-today {
+    background: hsl(var(--accent) / 0.4) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .calendar-wrapper .calendar-event,
+  .calendar-wrapper .fc-event-title {
+    background: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+    font-weight: 600 !important;
+    border-radius: 0.7rem !important;
+    padding: 0.3rem 0.5rem !important;
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.25);
+  }
+}
+
+.calendar-wrapper .fc-event-time,
+.calendar-wrapper .fc-daygrid-event-dot {
+  display: none !important;
+}
+
+.calendar-wrapper .fc-daygrid-event {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.9rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  padding: 0.35rem 0.5rem !important;
+}
+
+.calendar-wrapper .fc-event-title {
+  color: hsl(var(--primary-foreground)) !important;
+  font-weight: 600 !important;
+}
+
+.glass-card {
+  @apply bg-card/80 border border-border rounded-2xl p-5 sm:p-7 shadow-xl backdrop-blur-lg transition-all duration-300;
+  box-shadow: 0 4px 24px hsl(var(--primary) / 0.08), 0 2px 6px hsl(var(--accent) / 0.08);
+}
+
+@layer utilities {
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.25s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.25s ease-out;
+  }
+}
