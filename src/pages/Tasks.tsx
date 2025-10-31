@@ -17,6 +17,8 @@ const MAX_CHARACTERS = 80;
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -24,15 +26,21 @@ export default function Tasks() {
 
   async function loadTasks() {
     try {
+      setLoading(true);
       const data = await api.get<Task[]>(`/api/tasks`);
-      setTasks(data);
+      setTasks(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error("Erro ao carregar tarefas:", err);
       toast.error("Erro ao carregar tarefas");
+      setTasks([]);
+    } finally {
+      setLoading(false);
     }
   }
 
   async function handleAddTask() {
     if (!newTask.trim()) return;
+
     try {
       await api.post(`/api/tasks`, {
         text: newTask.trim().slice(0, MAX_CHARACTERS),
@@ -41,30 +49,58 @@ export default function Tasks() {
       await loadTasks();
       toast.success("Tarefa adicionada!");
     } catch (err) {
+      console.error("Erro ao adicionar tarefa:", err);
       toast.error("Erro ao adicionar tarefa");
     }
   }
 
   async function handleToggleTask(id: string) {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
+
     try {
+      setUpdatingId(id);
       await api.put(`/api/tasks/${id}/toggle`, {});
-      await loadTasks();
     } catch (err) {
+      console.error("Erro ao alternar tarefa:", err);
+      await loadTasks();
       toast.error("Erro ao alternar tarefa");
+    } finally {
+      setUpdatingId(null);
     }
   }
 
   async function handleDeleteTask(id: string) {
+    setTasks((tasks) => tasks.filter((task) => task.id !== id));
+
     try {
+      setUpdatingId(id);
       await api.delete(`/api/tasks/${id}`);
-      setTasks((tasks) => tasks.filter((task) => task.id !== id));
       toast.success("Tarefa excluída!");
     } catch (err) {
+      console.error("Erro ao excluir tarefa:", err);
+      await loadTasks();
       toast.error("Erro ao excluir tarefa");
+    } finally {
+      setUpdatingId(null);
     }
   }
 
   const completedCount = tasks.filter((t) => t.completed).length;
+
+  if (loading) {
+    return (
+      <section className="relative w-full min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center text-muted-foreground">
+          <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-3" />
+          <p>Carregando tarefas...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative w-full min-h-screen bg-background">
@@ -112,10 +148,11 @@ export default function Tasks() {
                   placeholder="Adicione uma nova tarefa..."
                   className="flex-grow text-base"
                   onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
+                  disabled={updatingId !== null}
                 />
                 <Button
                   onClick={handleAddTask}
-                  disabled={!newTask.trim()}
+                  disabled={!newTask.trim() || updatingId !== null}
                   className="gap-2 shadow-lg"
                   size="lg"
                 >
@@ -141,7 +178,8 @@ export default function Tasks() {
                   >
                     <button
                       onClick={() => handleToggleTask(id)}
-                      className="flex-shrink-0 transition-transform hover:scale-110"
+                      disabled={updatingId === id}
+                      className="flex-shrink-0 transition-transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {completed ? (
                         <CheckCircle2 className="w-6 h-6 text-accent" />
@@ -160,7 +198,8 @@ export default function Tasks() {
                     </span>
                     <button
                       onClick={() => handleDeleteTask(id)}
-                      className="flex-shrink-0 text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-all p-2 rounded-lg hover:bg-destructive/10"
+                      disabled={updatingId === id}
+                      className="flex-shrink-0 text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-all p-2 rounded-lg hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>

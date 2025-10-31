@@ -4,17 +4,21 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
+import { toast } from "sonner";
 
 interface Habit {
   id: string;
   name: string;
   weekData: boolean[];
 }
+
 const daysOfWeek = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
 export default function Habits() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [habitName, setHabitName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadHabits();
@@ -22,33 +26,79 @@ export default function Habits() {
 
   async function loadHabits() {
     try {
+      setLoading(true);
       const data = await api.get<Habit[]>("/api/habits");
       setHabits(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error("Erro ao carregar hábitos:", err);
+      toast.error("Não foi possível carregar os hábitos");
       setHabits([]);
+    } finally {
+      setLoading(false);
     }
   }
 
   async function handleAddHabit() {
     if (!habitName.trim()) return;
+
     try {
-      await api.post("/api/habits", { name: habitName });
+      await api.post<Habit>("/api/habits", { name: habitName });
       setHabitName("");
-      loadHabits();
-    } catch {}
+      await loadHabits();
+      toast.success("Hábito adicionado com sucesso");
+    } catch (err) {
+      console.error("Erro ao adicionar hábito:", err);
+      toast.error("Não foi possível adicionar o hábito");
+    }
   }
+
   async function handleToggleCheckbox(habitId: string, dayIdx: number) {
+    setHabits((prevHabits) =>
+      prevHabits.map((h) => {
+        if (h.id === habitId) {
+          const newWeekData = [...h.weekData];
+          newWeekData[dayIdx] = !newWeekData[dayIdx];
+          return { ...h, weekData: newWeekData };
+        }
+        return h;
+      })
+    );
+
     try {
+      setUpdatingId(habitId);
       await api.put(`/api/habits/${habitId}/toggle`, { day: dayIdx });
-      loadHabits();
-    } catch {}
+    } catch (err) {
+      console.error("Erro ao atualizar hábito:", err);
+      await loadHabits();
+      toast.error("Não foi possível atualizar o hábito");
+    } finally {
+      setUpdatingId(null);
+    }
   }
 
   async function handleDeleteHabit(habitId: string) {
     try {
-      await api.delete(`/api/habits/${habitId}`);
+      setUpdatingId(habitId);
+      await api.delete<void>(`/api/habits/${habitId}`);
       setHabits((habits) => habits.filter((h) => h.id !== habitId));
-    } catch {}
+      toast.success("Hábito removido com sucesso");
+    } catch (err) {
+      console.error("Erro ao deletar hábito:", err);
+      toast.error("Não foi possível remover o hábito");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  if (loading) {
+    return (
+      <section className="relative w-full min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center text-muted-foreground">
+          <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-3" />
+          <p>Carregando hábitos...</p>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -93,10 +143,11 @@ export default function Habits() {
                 onChange={(e) => setHabitName(e.target.value)}
                 className="flex-grow text-base"
                 onKeyDown={(e) => e.key === "Enter" && handleAddHabit()}
+                disabled={updatingId !== null}
               />
               <Button
                 onClick={handleAddHabit}
-                disabled={!habitName.trim()}
+                disabled={!habitName.trim() || updatingId !== null}
                 className="gap-2 shadow-lg w-full md:w-auto"
                 size="lg"
               >
@@ -151,10 +202,15 @@ export default function Habits() {
                                 onClick={() =>
                                   handleToggleCheckbox(habit.id, dayIdx)
                                 }
+                                disabled={updatingId === habit.id}
                                 className={`w-6 h-6 rounded-lg border-2 transition-all ${
                                   checked
                                     ? "bg-accent border-accent"
                                     : "border-muted-foreground/30 hover:border-accent/50"
+                                } ${
+                                  updatingId === habit.id
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
                                 }`}
                               >
                                 {checked && (
@@ -179,7 +235,8 @@ export default function Habits() {
                         <td className="py-4 px-4">
                           <button
                             onClick={() => handleDeleteHabit(habit.id)}
-                            className="text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-all p-2 rounded-lg hover:bg-destructive/10"
+                            disabled={updatingId === habit.id}
+                            className="text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-all p-2 rounded-lg hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Trash2 className="w-5 h-5" />
                           </button>
