@@ -54,7 +54,7 @@ export default function Calendar() {
   async function loadEvents() {
     try {
       setIsLoading(true);
-      const data = await api.get<CalendarEvent[]>("`${import.meta.env.VITE_API_URL}/api/calendar`");
+      const data = await api.get<CalendarEvent[]>(`/api/calendar`);
       const normalized = data.map((ev) => {
         let start = new Date(ev.start);
         let end = new Date(ev.end);
@@ -98,8 +98,8 @@ export default function Calendar() {
   async function handleSaveEvent(event: any) {
     try {
       await (event.id
-        ? api.put(`${import.meta.env.VITE_API_URL}/api/calendar/${event.id}`, { ...event, allDay: false })
-        : api.post(`${import.meta.env.VITE_API_URL}/api/calendar`, { ...event, allDay: false }));
+        ? api.put(`/api/calendar/${event.id}`, { ...event, allDay: false })
+        : api.post(`/api/calendar`, { ...event, allDay: false }));
 
       if (event.repeat && !event.id) {
         let repeats: CalendarEvent[] = [];
@@ -124,7 +124,7 @@ export default function Calendar() {
           });
         }
         for (const repeatEv of repeats) {
-          await api.post(`${import.meta.env.VITE_API_URL}/api/calendar`, repeatEv);
+          await api.post(`/api/calendar`, repeatEv);
         }
       }
       await loadEvents();
@@ -138,7 +138,7 @@ export default function Calendar() {
   }
   async function handleDeleteEvent(id: string) {
     try {
-      await api.delete(`${import.meta.env.VITE_API_URL}/api/calendar/${id}`);
+      await api.delete(`/api/calendar/${id}`);
       setEvents((events) => events.filter((ev) => ev.id !== id));
       setIsViewModalOpen(false);
       setSelectedEvent(null);

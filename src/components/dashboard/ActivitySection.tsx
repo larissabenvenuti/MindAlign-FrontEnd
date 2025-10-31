@@ -40,7 +40,7 @@ export default function RecentActivitySection() {
     setError(null);
 
     api
-      .get<ActivityItem[]>(`${import.meta.env.VITE_API_URL}/api/activity`)
+      .get<ActivityItem[]>(`/api/activity`)
       .then((data) => setRecentActivity(data))
       .catch((err) => setError("Erro ao buscar atividades"))
       .finally(() => setLoading(false));

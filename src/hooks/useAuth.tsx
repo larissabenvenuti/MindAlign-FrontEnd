@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await api.post<{
         user: User;
         token: string;
-      }>(`${import.meta.env.VITE_API_URL}/api/auth/login`, { email, password });
+      }>(`/api/auth/login`, { email, password });
       setUser(data.user);
       setToken(data.token);
       localStorage.setItem("user", JSON.stringify(data.user));

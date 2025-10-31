@@ -3,6 +3,7 @@ import { Save, Trash2, BookOpen, PenLine, ArrowLeft } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { api } from "../lib/api";
 
 const MAX_CHARACTERS = 500;
 
@@ -10,14 +11,6 @@ interface Note {
   id: string;
   content: string;
   date: string;
-}
-
-function authHeaders(): HeadersInit {
-  const token = localStorage.getItem("token");
-  return {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    "Content-Type": "application/json",
-  };
 }
 
 export default function Notes() {
@@ -31,12 +24,8 @@ export default function Notes() {
 
   async function loadNotes() {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notes`, {
-        credentials: "include",
-        headers: authHeaders(),
-      });
-      if (!res.ok) throw new Error("Erro ao buscar notas");
-      setNotes(await res.json());
+      const data = await api.get<Note[]>(`/api/notes`);
+      setNotes(data);
     } catch (err) {
       toast.error("Erro ao buscar notas");
     }
@@ -46,22 +35,12 @@ export default function Notes() {
     if (!note.trim()) return;
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notes`, {
-        method: "POST",
-        credentials: "include",
-        headers: authHeaders(),
-        body: JSON.stringify({ content: note.trim() }),
-      });
-      if (!response.ok) {
-        const errorJson = await response.json().catch(() => ({}));
-        toast.error(errorJson.error || "Erro ao salvar nota!");
-        return;
-      }
+      await api.post(`/api/notes`, { content: note.trim() });
       toast.success("Nota salva com sucesso!");
       setNote("");
       await loadNotes();
     } catch (err) {
-      toast.error("Erro de conexão ao salvar nota.");
+      toast.error("Erro ao salvar nota.");
     } finally {
       setLoading(false);
     }
@@ -69,19 +48,11 @@ export default function Notes() {
 
   async function handleDeleteNote(id: string) {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notes/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: authHeaders(),
-      });
-      if (!response.ok) {
-        toast.error("Erro ao excluir nota!");
-        return;
-      }
+      await api.delete(`/api/notes/${id}`);
       toast.success("Nota excluída!");
       setNotes((prev) => prev.filter((n) => n.id !== id));
     } catch {
-      toast.error("Erro de conexão ao excluir nota.");
+      toast.error("Erro ao excluir nota.");
     }
   }
 

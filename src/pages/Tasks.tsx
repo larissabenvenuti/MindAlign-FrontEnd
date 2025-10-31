@@ -3,6 +3,8 @@ import { Trash2, Plus, CheckCircle2, Circle, ArrowLeft } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { api } from "../lib/api";
 
 interface Task {
   id: string;
@@ -11,14 +13,6 @@ interface Task {
 }
 
 const MAX_CHARACTERS = 80;
-
-function authHeaders(): HeadersInit {
-  const token = localStorage.getItem("token");
-  return {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    "Content-Type": "application/json",
-  };
-}
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -29,41 +23,45 @@ export default function Tasks() {
   }, []);
 
   async function loadTasks() {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`, {
-      credentials: "include",
-      headers: authHeaders(),
-    });
-    if (res.ok) setTasks(await res.json());
+    try {
+      const data = await api.get<Task[]>(`/api/tasks`);
+      setTasks(data);
+    } catch (err) {
+      toast.error("Erro ao carregar tarefas");
+    }
   }
 
   async function handleAddTask() {
     if (!newTask.trim()) return;
-    await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`, {
-      method: "POST",
-      headers: authHeaders(),
-      credentials: "include",
-      body: JSON.stringify({ text: newTask.trim().slice(0, MAX_CHARACTERS) }),
-    });
-    setNewTask("");
-    loadTasks();
+    try {
+      await api.post(`/api/tasks`, {
+        text: newTask.trim().slice(0, MAX_CHARACTERS),
+      });
+      setNewTask("");
+      await loadTasks();
+      toast.success("Tarefa adicionada!");
+    } catch (err) {
+      toast.error("Erro ao adicionar tarefa");
+    }
   }
 
   async function handleToggleTask(id: string) {
-    await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${id}/toggle`, {
-      method: "PATCH",
-      credentials: "include",
-      headers: authHeaders(),
-    });
-    loadTasks();
+    try {
+      await api.put(`/api/tasks/${id}/toggle`, {});
+      await loadTasks();
+    } catch (err) {
+      toast.error("Erro ao alternar tarefa");
+    }
   }
 
   async function handleDeleteTask(id: string) {
-    await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${id}`, {
-      method: "DELETE",
-      credentials: "include",
-      headers: authHeaders(),
-    });
-    setTasks((tasks) => tasks.filter((task) => task.id !== id));
+    try {
+      await api.delete(`/api/tasks/${id}`);
+      setTasks((tasks) => tasks.filter((task) => task.id !== id));
+      toast.success("Tarefa excluída!");
+    } catch (err) {
+      toast.error("Erro ao excluir tarefa");
+    }
   }
 
   const completedCount = tasks.filter((t) => t.completed).length;
