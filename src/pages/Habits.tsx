@@ -28,7 +28,7 @@ export default function Habits() {
   }, []);
 
   async function loadHabits() {
-    const res = await fetch("/api/habits", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/habits`, {
       credentials: "include",
       headers: authHeaders(),
     });
@@ -39,7 +39,7 @@ export default function Habits() {
 
   async function handleAddHabit() {
     if (!habitName.trim()) return;
-    const res = await fetch("/api/habits", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/habits`, {
       method: "POST",
       headers: authHeaders(),
       credentials: "include",
@@ -52,7 +52,7 @@ export default function Habits() {
   }
 
   async function handleToggleCheckbox(habitId: string, dayIdx: number) {
-    await fetch(`/api/habits/${habitId}/toggle`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/habits/${habitId}/toggle`, {
       method: "PATCH",
       credentials: "include",
       headers: authHeaders(),
@@ -62,7 +62,7 @@ export default function Habits() {
   }
 
   async function handleDeleteHabit(habitId: string) {
-    await fetch(`/api/habits/${habitId}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/habits/${habitId}`, {
       method: "DELETE",
       credentials: "include",
       headers: authHeaders(),

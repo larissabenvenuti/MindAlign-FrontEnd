@@ -29,7 +29,7 @@ export default function Tasks() {
   }, []);
 
   async function loadTasks() {
-    const res = await fetch("/api/tasks", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`, {
       credentials: "include",
       headers: authHeaders(),
     });
@@ -38,7 +38,7 @@ export default function Tasks() {
 
   async function handleAddTask() {
     if (!newTask.trim()) return;
-    await fetch("/api/tasks", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`, {
       method: "POST",
       headers: authHeaders(),
       credentials: "include",
@@ -49,7 +49,7 @@ export default function Tasks() {
   }
 
   async function handleToggleTask(id: string) {
-    await fetch(`/api/tasks/${id}/toggle`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${id}/toggle`, {
       method: "PATCH",
       credentials: "include",
       headers: authHeaders(),
@@ -58,7 +58,7 @@ export default function Tasks() {
   }
 
   async function handleDeleteTask(id: string) {
-    await fetch(`/api/tasks/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${id}`, {
       method: "DELETE",
       credentials: "include",
       headers: authHeaders(),

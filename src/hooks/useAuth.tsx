@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await api.post<{
         user: User;
         token: string;
-      }>("/api/auth/login", { email, password });
+      }>(`${import.meta.env.VITE_API_URL}/api/auth/login`, { email, password });
       setUser(data.user);
       setToken(data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (name: string, email: string, password: string) => {
     setLoading(true);
     try {
-      await api.post("/api/auth/register", { name, email, password });
+      await api.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, { name, email, password });
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await api.post<{
         user: User;
         token: string;
-      }>("/api/auth/google", { token: googleToken });
+      }>(`${import.meta.env.VITE_API_URL}/api/auth/google`, { token: googleToken });
       setUser(data.user);
       setToken(data.token);
       localStorage.setItem("user", JSON.stringify(data.user));

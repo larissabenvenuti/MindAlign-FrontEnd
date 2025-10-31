@@ -31,7 +31,7 @@ export default function Notes() {
 
   async function loadNotes() {
     try {
-      const res = await fetch("/api/notes", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notes`, {
         credentials: "include",
         headers: authHeaders(),
       });
@@ -46,7 +46,7 @@ export default function Notes() {
     if (!note.trim()) return;
     setLoading(true);
     try {
-      const response = await fetch("/api/notes", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notes`, {
         method: "POST",
         credentials: "include",
         headers: authHeaders(),
@@ -69,7 +69,7 @@ export default function Notes() {
 
   async function handleDeleteNote(id: string) {
     try {
-      const response = await fetch(`/api/notes/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notes/${id}`, {
         method: "DELETE",
         credentials: "include",
         headers: authHeaders(),

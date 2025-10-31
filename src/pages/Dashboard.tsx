@@ -28,7 +28,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/activity", { credentials: "include" })
+    fetch(`${import.meta.env.VITE_API_URL}/api/activity`, { credentials: "include" })
       .then((res) => (res.ok ? res.json() : []))
       .then(setRecentActivity)
       .catch(() => setRecentActivity([]))
