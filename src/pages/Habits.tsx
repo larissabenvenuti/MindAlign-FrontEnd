@@ -66,7 +66,7 @@ export default function Habits() {
 
     try {
       setUpdatingId(habitId);
-      await api.put(`/api/habits/${habitId}/toggle`, { day: dayIdx });
+      await api.patch(`/api/habits/${habitId}/toggle`, { day: dayIdx });
     } catch (err) {
       console.error("Erro ao atualizar hábito:", err);
       await loadHabits();

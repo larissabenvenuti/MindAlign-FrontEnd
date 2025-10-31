@@ -63,7 +63,7 @@ export default function Tasks() {
 
     try {
       setUpdatingId(id);
-      await api.put(`/api/tasks/${id}/toggle`, {});
+      await api.patch(`/api/tasks/${id}/toggle`, {});
     } catch (err) {
       console.error("Erro ao alternar tarefa:", err);
       await loadTasks();
