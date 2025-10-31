@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, Plus, CheckCircle2, Circle, ArrowLeft } from "lucide-react";
+import { Trash2, Plus, CheckCircle2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { api } from "../lib/api";
@@ -15,6 +15,7 @@ export default function Habits() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [newHabit, setNewHabit] = useState("");
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
     loadHabits();
@@ -22,10 +23,13 @@ export default function Habits() {
 
   async function loadHabits() {
     try {
-      const data = await api.get<Habit[]>(`/api/habits`);
-      setHabits(data);
+      const data = await api.get<Habit[]>("/api/habits");
+      setHabits(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error(err);
       toast.error("Erro ao carregar hábitos");
+    } finally {
+      setInitialLoading(false);
     }
   }
 
@@ -33,11 +37,12 @@ export default function Habits() {
     if (!newHabit.trim()) return;
     setLoading(true);
     try {
-      await api.post(`/api/habits`, { name: newHabit.trim() });
+      await api.post("/api/habits", { name: newHabit.trim() });
       toast.success("Hábito adicionado!");
       setNewHabit("");
       await loadHabits();
     } catch (err) {
+      console.error(err);
       toast.error("Erro ao adicionar hábito");
     } finally {
       setLoading(false);
@@ -49,6 +54,7 @@ export default function Habits() {
       await api.put(`/api/habits/${habitId}/toggle`, { day });
       await loadHabits();
     } catch (err) {
+      console.error(err);
       toast.error("Erro ao atualizar hábito");
     }
   }
@@ -59,6 +65,7 @@ export default function Habits() {
       toast.success("Hábito excluído!");
       setHabits((prev) => prev.filter((h) => h.id !== id));
     } catch (err) {
+      console.error(err);
       toast.error("Erro ao excluir hábito");
     }
   }
@@ -66,13 +73,23 @@ export default function Habits() {
   const daysOfWeek = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
   const today = new Date().getDay();
 
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-muted-foreground">
+        Carregando hábitos...
+      </div>
+    );
+  }
+
   return (
     <section className="relative w-full min-h-screen bg-background">
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 sm:top-14 sm:left-14 w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] bg-primary/10 rounded-full blur-[80px] sm:blur-[100px] opacity-70" />
         <div className="absolute bottom-10 right-10 sm:bottom-14 sm:right-14 w-[150px] h-[150px] sm:w-[180px] sm:h-[180px] bg-accent/10 rounded-full blur-[70px] sm:blur-[90px] opacity-70" />
       </div>
+
       <div className="h-20 sm:h-24" />
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-10">
         <div className="space-y-6 sm:space-y-8 lg:space-y-10">
           <header className="space-y-3 sm:space-y-4">
@@ -83,6 +100,7 @@ export default function Habits() {
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform duration-200" />
               Voltar ao Dashboard
             </Link>
+
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="relative flex-shrink-0">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 rounded-xl flex items-center justify-center">
@@ -99,6 +117,7 @@ export default function Habits() {
               </div>
             </div>
           </header>
+
           <div className="bg-card/80 backdrop-blur border border-border rounded-2xl shadow-lg flex flex-col gap-6 p-5 sm:p-8">
             <div className="space-y-3">
               <div className="flex gap-3">
@@ -145,6 +164,7 @@ export default function Habits() {
                     </th>
                   </tr>
                 </thead>
+
                 <tbody className="bg-card divide-y divide-border">
                   {habits.length === 0 ? (
                     <tr>
@@ -164,11 +184,12 @@ export default function Habits() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                           {habit.name}
                         </td>
+
                         {daysOfWeek.map((_, dayIndex) => {
                           const date = new Date();
                           date.setDate(date.getDate() - (today - dayIndex));
                           const dateKey = date.toISOString().split("T")[0];
-                          const checked = habit.completedDays[dateKey] || false;
+                          const checked = habit.completedDays?.[dateKey] || false;
                           const isToday = dayIndex === today;
 
                           return (
@@ -179,8 +200,7 @@ export default function Habits() {
                                     handleToggleDay(habit.id, dayIndex)
                                   }
                                   disabled={!habit.days.includes(dayIndex)}
-                                  className={`
-                                    w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-200
+                                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-200
                                     ${
                                       habit.days.includes(dayIndex)
                                         ? checked
@@ -199,6 +219,7 @@ export default function Habits() {
                             </td>
                           );
                         })}
+
                         <td className="py-4 px-4 text-right">
                           <button
                             onClick={() => handleDeleteHabit(habit.id)}
