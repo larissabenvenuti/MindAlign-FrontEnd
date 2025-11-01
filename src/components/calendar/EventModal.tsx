@@ -24,32 +24,26 @@ export default function EventModal({
   const [end, setEnd] = useState("");
   const [repeat, setRepeat] = useState("");
 
-  useEffect(() => {
-    function formatDateTime(dateString: string) {
-      if (!dateString) return "";
-      const date = new Date(dateString);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    }
+  function formatDateTimeLocal(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
 
+  useEffect(() => {
     if (existingEvent) {
       setTitle(existingEvent.title || "");
-      setStart(formatDateTime(existingEvent.start));
-      setEnd(formatDateTime(existingEvent.end));
+      const startDate = new Date((existingEvent.start || "").replace("Z", ""));
+      const endDate = new Date((existingEvent.end || "").replace("Z", ""));
+      setStart(formatDateTimeLocal(startDate));
+      setEnd(formatDateTimeLocal(endDate));
       setRepeat(existingEvent.repeat || "");
     } else if (currentDate) {
-      const date = new Date(currentDate);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      setStart(`${year}-${month}-${day}T${hours}:${minutes}`);
-      setEnd(`${year}-${month}-${day}T${hours}:${minutes}`);
+      setStart(formatDateTimeLocal(currentDate));
+      setEnd(formatDateTimeLocal(currentDate));
       setTitle("");
       setRepeat("");
     }
@@ -63,10 +57,8 @@ export default function EventModal({
       aria-modal="true"
       role="dialog"
     >
-      {" "}
       <div className="relative bg-card/90 border border-border backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-md md:max-w-lg p-7 md:p-8 space-y-7 animate-scale-in overflow-hidden">
-        {" "}
-        <div className="absolute -top-20 -right-20 w-56 h-56 bg-primary/25 rounded-full blur-3xl" />{" "}
+        <div className="absolute -top-20 -right-20 w-56 h-56 bg-primary/25 rounded-full blur-3xl" />
         <div className="absolute -bottom-24 -left-16 w-56 h-56 bg-accent/25 rounded-full blur-3xl" />
         <button
           onClick={onClose}

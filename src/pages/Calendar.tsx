@@ -55,19 +55,12 @@ export default function Calendar() {
     try {
       setIsLoading(true);
       const data = await api.get<CalendarEvent[]>(`/api/calendar`);
-      const normalized = data.map((ev) => {
-        let start = new Date(ev.start);
-        let end = new Date(ev.end);
-        if (end.getHours() === 0 && end.getMinutes() === 0) {
-          end.setMinutes(end.getMinutes() - 1);
-        }
-        return {
-          ...ev,
-          start: start.toISOString(),
-          end: end.toISOString(),
-          allDay: false,
-        };
-      });
+      const normalized = data.map((ev) => ({
+        ...ev,
+        start: ev.start,
+        end: ev.end,
+        allDay: false,
+      }));
       setEvents(normalized);
     } catch {
       toast.error("Erro ao carregar eventos");
@@ -118,8 +111,12 @@ export default function Calendar() {
           }
           repeats.push({
             ...event,
-            start: startCopy.toISOString(),
-            end: endCopy.toISOString(),
+            start: startCopy
+              .toISOString()
+              .replace("Z", ""),
+            end: endCopy
+              .toISOString()
+              .replace("Z", ""),
             allDay: false,
           });
         }
@@ -265,6 +262,7 @@ export default function Calendar() {
                     eventClick={handleEventClick}
                     height="100%"
                     eventClassNames="calendar-event"
+                    timeZone="local"
                   />
                 )}
               </div>
