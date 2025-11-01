@@ -33,16 +33,30 @@ class ApiClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        const error: ApiError = await response.json().catch(() => ({
-          error: `HTTP error! status: ${response.status}`,
-        }));
-        throw new Error(error.error || error.message || "Unknown error");
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        
+        try {
+          const errorData: ApiError = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+        }
+
+        const error = new Error(errorMessage);
+        (error as any).status = response.status;
+        throw error;
       }
 
-      return await response.json();
+      const data = await response.json();
+      return data as T;
     } catch (error) {
-      console.error("API request failed:", error);
-      throw error;
+      if (error instanceof Error) {
+        console.error("API request failed:", error.message);
+        throw error;
+      }
+      
+      const unknownError = new Error("Erro desconhecido na requisição");
+      console.error("API request failed:", unknownError);
+      throw unknownError;
     }
   }
 

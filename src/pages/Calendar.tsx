@@ -16,7 +16,6 @@ interface CalendarEvent {
   title: string;
   start: string;
   end: string;
-  allDay?: boolean;
 }
 
 function useIsDarkTheme() {
@@ -55,13 +54,7 @@ export default function Calendar() {
     try {
       setIsLoading(true);
       const data = await api.get<CalendarEvent[]>(`/api/calendar`);
-      const normalized = data.map((ev) => ({
-        ...ev,
-        start: ev.start,
-        end: ev.end,
-        allDay: false,
-      }));
-      setEvents(normalized);
+      setEvents(data);
     } catch {
       toast.error("Erro ao carregar eventos");
     } finally {
@@ -74,65 +67,75 @@ export default function Calendar() {
     setSelectedEvent(null);
     setIsModalOpen(true);
   }
+
   function handleEventClick(info: any) {
     const clicked = events.find((e) => e.id === info.event.id);
     setSelectedEvent(clicked || null);
     setIsViewModalOpen(true);
   }
+
   function handleCloseModal() {
     setIsModalOpen(false);
     setSelectedEvent(null);
     setCurrentDate(null);
   }
+
   function handleCloseViewModal() {
     setIsViewModalOpen(false);
     setSelectedEvent(null);
   }
+
   async function handleSaveEvent(event: any) {
     try {
-      await (event.id
-        ? api.put(`/api/calendar/${event.id}`, { ...event, allDay: false })
-        : api.post(`/api/calendar`, { ...event, allDay: false }));
+      if (event.id) {
+        await api.put(`/api/calendar/${event.id}`, {
+          title: event.title,
+          start: event.start,
+          end: event.end,
+        });
+      } else {
+        await api.post(`/api/calendar`, {
+          title: event.title,
+          start: event.start,
+          end: event.end,
+        });
 
-      if (event.repeat && !event.id) {
-        let repeats: CalendarEvent[] = [];
-        const origStart = new Date(event.start);
-        const origEnd = new Date(event.end);
-        for (let i = 1; i <= 5; i++) {
-          let startCopy = new Date(origStart);
-          let endCopy = new Date(origEnd);
-          if (event.repeat === "weekly") {
-            startCopy.setDate(startCopy.getDate() + 7 * i);
-            endCopy.setDate(endCopy.getDate() + 7 * i);
+        if (event.repeat) {
+          const origStart = new Date(event.start);
+          const origEnd = new Date(event.end);
+          const duration = origEnd.getTime() - origStart.getTime();
+
+          for (let i = 1; i <= 5; i++) {
+            let startCopy = new Date(origStart);
+            let endCopy = new Date(origEnd);
+
+            if (event.repeat === "weekly") {
+              startCopy.setDate(startCopy.getDate() + 7 * i);
+              endCopy.setDate(endCopy.getDate() + 7 * i);
+            } else if (event.repeat === "monthly") {
+              startCopy.setMonth(startCopy.getMonth() + i);
+              endCopy.setMonth(endCopy.getMonth() + i);
+            }
+
+            await api.post(`/api/calendar`, {
+              title: event.title,
+              start: startCopy.toISOString(),
+              end: endCopy.toISOString(),
+            });
           }
-          if (event.repeat === "monthly") {
-            startCopy.setMonth(startCopy.getMonth() + i);
-            endCopy.setMonth(endCopy.getMonth() + i);
-          }
-          repeats.push({
-            ...event,
-            start: startCopy
-              .toISOString()
-              .replace("Z", ""),
-            end: endCopy
-              .toISOString()
-              .replace("Z", ""),
-            allDay: false,
-          });
-        }
-        for (const repeatEv of repeats) {
-          await api.post(`/api/calendar`, repeatEv);
         }
       }
+
       await loadEvents();
       setIsModalOpen(false);
       setSelectedEvent(null);
       setCurrentDate(null);
-      toast.success("Evento criado!");
+      toast.success(event.id ? "Evento atualizado!" : "Evento criado!");
     } catch {
       toast.error("Erro ao salvar evento");
     }
   }
+
   async function handleDeleteEvent(id: string) {
     try {
       await api.delete(`/api/calendar/${id}`);
@@ -144,6 +147,7 @@ export default function Calendar() {
       toast.error("Erro ao excluir evento");
     }
   }
+
   function handleEditEvent(event: any) {
     setSelectedEvent(event);
     setIsModalOpen(true);

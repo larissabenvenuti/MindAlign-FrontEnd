@@ -16,11 +16,11 @@ export default function ViewEventModal({
   onSave,
   onDelete,
 }: ViewEventModalProps) {
-  if (!isOpen || !eventDetails) return null;
+  if (!isOpen || !eventDetails?.id) return null;
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
-    const date = new Date(dateString.replace("Z", ""));
+    const date = new Date(dateString);
     return date.toLocaleString("pt-BR", {
       dateStyle: "short",
       timeStyle: "short",
@@ -59,16 +59,6 @@ export default function ViewEventModal({
             <h3 className="text-lg font-semibold text-foreground">
               {eventDetails.title}
             </h3>
-            {eventDetails.repeat && (
-              <p className="text-sm text-primary font-medium">
-                Repetição:{" "}
-                {eventDetails.repeat === "weekly"
-                  ? "Semanal"
-                  : eventDetails.repeat === "monthly"
-                  ? "Mensal"
-                  : "Não repetido"}
-              </p>
-            )}
           </div>
           <div className="flex flex-col gap-3 border border-border rounded-lg p-4 bg-background/50">
             <div className="flex items-center gap-2 text-foreground">

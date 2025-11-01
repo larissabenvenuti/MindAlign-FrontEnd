@@ -36,20 +36,47 @@ export default function EventModal({
   useEffect(() => {
     if (existingEvent) {
       setTitle(existingEvent.title || "");
-      const startDate = new Date((existingEvent.start || "").replace("Z", ""));
-      const endDate = new Date((existingEvent.end || "").replace("Z", ""));
+      const startDate = new Date(existingEvent.start);
+      const endDate = new Date(existingEvent.end);
       setStart(formatDateTimeLocal(startDate));
       setEnd(formatDateTimeLocal(endDate));
       setRepeat(existingEvent.repeat || "");
     } else if (currentDate) {
-      setStart(formatDateTimeLocal(currentDate));
-      setEnd(formatDateTimeLocal(currentDate));
+      const now = new Date(currentDate);
+      const oneHourLater = new Date(currentDate);
+      oneHourLater.setHours(oneHourLater.getHours() + 1);
+      
+      setStart(formatDateTimeLocal(now));
+      setEnd(formatDateTimeLocal(oneHourLater));
       setTitle("");
       setRepeat("");
     }
   }, [isOpen, currentDate, existingEvent]);
 
   if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title.trim()) {
+      return;
+    }
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    if (startDate >= endDate) {
+      return;
+    }
+
+    onSave({
+      id: existingEvent?.id,
+      title: title.trim(),
+      start: startDate.toISOString(),
+      end: endDate.toISOString(),
+      repeat: repeat || undefined,
+    });
+  };
 
   return (
     <div
@@ -80,19 +107,7 @@ export default function EventModal({
             ? "Atualize as informações do seu evento abaixo."
             : "Preencha os detalhes para criar um novo evento."}
         </p>
-        <form
-          className="space-y-5 relative z-10"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSave({
-              id: existingEvent?.id,
-              title,
-              start: start ? `${start}:00` : undefined,
-              end: end ? `${end}:00` : undefined,
-              repeat,
-            });
-          }}
-        >
+        <form className="space-y-5 relative z-10" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label
               htmlFor="title"
